@@ -32,8 +32,8 @@ class Beatle:
       rich_print(f"[bold blue]{self.name} attacked {target.name} and reduced their health to {target.health_points}")
       return target
     
-  def add_health(self: Self, health: int) -> None:
-    self.health_points += health
+  def add_health(self: Self, health: int, max_hp: int) -> None:
+    self.health_points = min(self.health_points + health, max_hp)
   
       
 class BeetleArmy:
@@ -60,25 +60,13 @@ class BeetleArmy:
     return sum([beatle.health_points for beatle in self.beetles_list])
   
   def __lt__(self: Self, other: Self) -> bool:
-    
-    army_1_health = self.army_health
-    army_2_health = other.army_health
-    
-    return army_1_health < army_2_health
+    return self.army_health < other.army_health
   
   def __le__(self: Self, other: Self) -> bool:
-    
-    army_1_health = self.army_health
-    army_2_health = other.army_health
-    
-    return army_1_health <= army_2_health
+    return self.army_health <= other.army_health
   
-  def __eq__(self: Self, other: Self):
-
-    army_1_health = self.army_health
-    army_2_health = other.army_health
-    
-    return army_1_health == army_2_health
+  def __eq__(self: Self, other: Self) -> bool:
+    return self.army_health == other.army_health
 
   def __add__(self: Self, other: Self) -> Self:
     if self.beetles_name != other.beetles_name:
@@ -106,23 +94,30 @@ class BeetleArmy:
       if damaged_beatle.health_points > 0:
         beatles_damaged.append(damaged_beatle)
       else:
-        list_2[i].add_health(10)
+        list_1[i].add_health(10, self.beatles_max_health_points)
         rich_print(f"[italic red]Beatle died in the fight, beatle name: {damaged_beatle.name}, index: {i}")
     
     return beatles_damaged, list_2
     
   
   def battle(self: Self, other: Self):
-    
-    self_beatles_army = self.beetles_list
-    other_beatles_army = other.beetles_list
+    self_beatles_army = self.beetles_list.copy()
+    other_beatles_army = other.beetles_list.copy()
+    round_num = 0
     
     while self_beatles_army and other_beatles_army:
+      round_num += 1
+      rich_print(f"[bold cyan]Round {round_num}:")
       
       (self_beatles_army, other_beatles_army) = self.fight_beatles(self_beatles_army, other_beatles_army)
       (other_beatles_army, self_beatles_army) = self.fight_beatles(other_beatles_army, self_beatles_army)
- 
-    rich_print(f"[green bold]Army {self.beetles_name if self_beatles_army else other.beetles_name} win")        
+      
+      rich_print(f"  {self.beetles_name} army: {len(self_beatles_army)} beetles, total HP: {sum(b.health_points for b in self_beatles_army)}")
+      rich_print(f"  {other.beetles_name} army: {len(other_beatles_army)} beetles, total HP: {sum(b.health_points for b in other_beatles_army)}")
+      rich_print()
+    
+    winner = self.beetles_name if self_beatles_army else other.beetles_name
+    rich_print(f"[green bold]Army {winner} wins after {round_num} rounds!")        
     
       
   def print_army_listing(self: Self) -> None:
@@ -133,31 +128,29 @@ class BeetleArmy:
     
       
 if __name__ == "__main__":
-  # m1: Beatle = Beatle(health_points=100, name=Names.JOHN)
-  # m2: Beatle = Beatle(health_points=100, name=Names.PAUL)
+
+  print("Enter details for Army 1:")
+  army1_name = input("Name (JOHN, PAUL, GEORGE): ").upper()
+  army1_size = int(input("Army size: "))
+  army1_max_hp = int(input("Max health points: "))
+  army1_max_damage = int(input("Max damage: "))
   
-  # print(m1 == m2)
-  # print(m1 != m2)
-  # print(m1)
-  # print(m1 <= m2)
+  print("\nEnter details for Army 2:")
+  army2_name = input("Name (JOHN, PAUL, GEORGE): ").upper()
+  army2_size = int(input("Army size: "))
+  army2_max_hp = int(input("Max health points: "))
+  army2_max_damage = int(input("Max damage: "))
   
-  army_1 = BeetleArmy(beatles_name=Names.JOHN, beetles_army_size=5, beetles_max_health_points=55)
+  army_1 = BeetleArmy(beatles_name=Names[army1_name], beetles_army_size=army1_size, beetles_max_health_points=army1_max_hp, beatles_max_damage=army1_max_damage)
+  army_2 = BeetleArmy(beatles_name=Names[army2_name], beetles_army_size=army2_size, beetles_max_health_points=army2_max_hp, beatles_max_damage=army2_max_damage)
   
+  rich_print(f"[bold green]Army 1: {army_1.beetles_name}")
   army_1.print_army_listing()
-  
-  print("=================================")
-  
-  
-  army_2 = BeetleArmy(beatles_name=Names.GEORGE, beetles_army_size=4, beetles_max_health_points=95)
-  
+  rich_print(f"[bold green]Army 2: {army_2.beetles_name}")
   army_2.print_army_listing()
   
-  print("=================================")
-  
-  # army_3: BeetleArmy = army_1 + army_2
-  
-  
-  army_2.battle(army_1)
+  rich_print("[bold yellow]Starting battle...")
+  army_1.battle(army_2)
   
   
 # Задание:
