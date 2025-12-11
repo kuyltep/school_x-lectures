@@ -30,9 +30,25 @@ openai_validation_model = os.getenv("OPENAI_VALIDATION_MODEL")
 
 search_wrapper = DuckDuckGoSearchAPIWrapper(max_results=5)
 
-stop_words = ["война", "убийство", "терроризм", "взлом", "наркотики", "порнография",
-    "экстремизм", "самоубийство", "насилие", "мошенничество", "кибератака",
-    "хакер", "взрыв", "похищение", "преступность", "шпионаж", "коррупция"]
+stop_words = [
+    "война",
+    "убийство",
+    "терроризм",
+    "взлом",
+    "наркотики",
+    "порнография",
+    "экстремизм",
+    "самоубийство",
+    "насилие",
+    "мошенничество",
+    "кибератака",
+    "хакер",
+    "взрыв",
+    "похищение",
+    "преступность",
+    "шпионаж",
+    "коррупция",
+]
 
 
 @register_validator(name="stop-words", data_type="string")
@@ -104,7 +120,9 @@ class ToxicMessage(Validator):
             return PassResult()
 
 
-guard: Guard = Guard().use_many(StopWords(search_words=stop_words), ToxicMessage(threshold=50))
+guard: Guard = Guard().use_many(
+    StopWords(search_words=stop_words), ToxicMessage(threshold=50)
+)
 
 
 class GeneratePromoInput(BaseModel):
@@ -168,7 +186,6 @@ tools_map = {"search": search, "generate_promocode": generate_promocode}
 checkpointer = InMemorySaver()
 
 
-
 SYSTEM_PROMPT = """
 Ты — Travel.AI, вежливый и компетентный помощник по путешествиям от компании travel.ai. Твоя задача — помогать пользователям планировать, бронировать и организовывать поездки.
 Давайте чёткие, краткие и полезные рекомендации по направлениям, перелётам, проживанию, достопримечательностям, советам путешественникам, визовым требованиям и составлению маршрутов.
@@ -216,28 +233,27 @@ context = Context(user_id="1")
 
 while True:
     try:
-      user_input = input("Введите запрос для Travel.AI агента: ").strip()
-      
-      if "exit" in user_input:
-        print("Пока")
-        break
-      
-      guard.validate(user_input)
+        user_input = input("Введите запрос для Travel.AI агента: ").strip()
 
-      messages = {"messages": [{"role": "user", "content": user_input}]}
+        if "exit" in user_input:
+            print("Пока")
+            break
 
-      response = agent.invoke(messages, context=context, config=config)
+        guard.validate(user_input)
 
-      last_message = response["messages"][-1]
-      print(last_message.content)
+        messages = {"messages": [{"role": "user", "content": user_input}]}
 
+        response = agent.invoke(messages, context=context, config=config)
 
-      guard.validate(last_message.content)
-      # if last_message.tool_calls:
-      #     tools_messages = call_tools(last_message)
+        last_message = response["messages"][-1]
+        print(last_message.content)
 
-      #     print(f"Ответ: {last_message.content}")
-      # else:
-      print(f"Ответ: {last_message.content}")
+        guard.validate(last_message.content)
+        # if last_message.tool_calls:
+        #     tools_messages = call_tools(last_message)
+
+        #     print(f"Ответ: {last_message.content}")
+        # else:
+        print(f"Ответ: {last_message.content}")
     except Exception as e:
-      print(e)
+        print(e)
