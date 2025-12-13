@@ -1,0 +1,15 @@
+[project]
+name = "async-agents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "agno>=2.3.11",
+    "fastapi[standard]>=0.124.4",
+    "ipykernel>=7.1.0",
+    "ipynb>=0.5.1",
+    "nest-asyncio>=1.6.0",
+    "openai>=2.11.0",
+    "openrouter>=0.1.1",
+]
